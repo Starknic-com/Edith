@@ -48,17 +48,14 @@ import gdxforConnectionSmallIconURL from './gdxfor/gdxfor-small.svg';
 
 import pikachuBotIconURL from './pikachubot/pikachu.png';
 import pikachuBotInsetIconURL from './pikachubot/pikachu-icon.png';
+import pikachuBotConnectionIconURL from './pikachubot/pikachu-icon.png';
+import pikachuBotConnectionSmallIconURL from './pikachubot/pikachu-icon-24.png';
 
 export default [
     {
-        name: (
-            <FormattedMessage
-                defaultMessage="Pikachu Bot"
-                description="Name for the 'pikachubot' extension"
-                id="gui.extension.pikachubot.name"
-            />
-        ),
+        name: 'Pikachu Bot',
         extensionId: 'pikachubot',
+        collaborator: 'starknic',
         iconURL: pikachuBotIconURL,
         insetIconURL: pikachuBotInsetIconURL,
         description: (
@@ -68,8 +65,54 @@ export default [
                 id="gui.extension.pikachubot.description"
             />
         ),
-        featured: true
+        featured: true,
+        disabled: false,
+        bluetoothRequired: true,
+        internetConnectionRequired: true,
+        launchPeripheralConnectionFlow: true,
+        useAutoScan: false,
+        connectionIconURL: pikachuBotConnectionIconURL,
+        connectionSmallIconURL: pikachuBotConnectionSmallIconURL,
+        connectingMessage: (
+            <FormattedMessage
+                defaultMessage="Connecting to Pikachu"
+                description="Message to help children connect to their pikachu."
+                id="gui.extension.pikachubot.connectingMessage"
+            />
+        ),
+        helpLink: 'http://starknic.com'
     },
+    {
+        name: 'micro:bit',
+        extensionId: 'microbit',
+        collaborator: 'micro:bit',
+        iconURL: microbitIconURL,
+        insetIconURL: microbitInsetIconURL,
+        description: (
+            <FormattedMessage
+                defaultMessage="Connect your projects with the world."
+                description="Description for the 'micro:bit' extension"
+                id="gui.extension.microbit.description"
+            />
+        ),
+        featured: true,
+        disabled: false,
+        bluetoothRequired: true,
+        internetConnectionRequired: true,
+        launchPeripheralConnectionFlow: true,
+        useAutoScan: false,
+        connectionIconURL: microbitConnectionIconURL,
+        connectionSmallIconURL: microbitConnectionSmallIconURL,
+        connectingMessage: (
+            <FormattedMessage
+                defaultMessage="Connecting"
+                description="Message to help people connect to their micro:bit."
+                id="gui.extension.microbit.connectingMessage"
+            />
+        ),
+        helpLink: 'https://scratch.mit.edu/microbit'
+    },
+
     {
         name: (
             <FormattedMessage
@@ -189,36 +232,7 @@ export default [
         ),
         featured: true
     },
-    {
-        name: 'micro:bit',
-        extensionId: 'microbit',
-        collaborator: 'micro:bit',
-        iconURL: microbitIconURL,
-        insetIconURL: microbitInsetIconURL,
-        description: (
-            <FormattedMessage
-                defaultMessage="Connect your projects with the world."
-                description="Description for the 'micro:bit' extension"
-                id="gui.extension.microbit.description"
-            />
-        ),
-        featured: true,
-        disabled: false,
-        bluetoothRequired: true,
-        internetConnectionRequired: true,
-        launchPeripheralConnectionFlow: true,
-        useAutoScan: false,
-        connectionIconURL: microbitConnectionIconURL,
-        connectionSmallIconURL: microbitConnectionSmallIconURL,
-        connectingMessage: (
-            <FormattedMessage
-                defaultMessage="Connecting"
-                description="Message to help people connect to their micro:bit."
-                id="gui.extension.microbit.connectingMessage"
-            />
-        ),
-        helpLink: 'https://scratch.mit.edu/microbit'
-    },
+
     {
         name: 'LEGO MINDSTORMS EV3',
         extensionId: 'ev3',

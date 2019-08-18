@@ -1,40 +1,53 @@
-const ArgumentType = require('../../extension-support/argument-type');
-const BlockType = require('../../extension-support/block-type');
-const Cast = require('../../util/cast');
-const log = require('../../util/log');
+import {NUMBER} from '../../extension-support/argument-type';
+import {COMMAND} from '../../extension-support/block-type';
+import {log as _log} from '../../util/log';
 
-class PikachuPeriferal{
-    constructor(runtime, extensionId){
-        this._runtime = runtime
-        this._extensionId=extensionId
+import CustomScratchLinkSocketFactory from './link-socket-factory';
+import {PikachuBotPeripheral} from './peripheral';
 
-        this._sensors ={
-            
-        }
-        this._output={
-            led:false
-        }
+
+const blockIconURI = 'https://img.icons8.com/color/48/000000/pikachu-pokemon.png';
+export default class PikachuBotExtenstion {
+    static get EXTENSION_ID () {
+        return 'pikachubot';
     }
-}
+    static get EXTENSION_NAME (){
+        return 'Pikachu';
+    }
 
-class PikachuBotBlocks {
+    /**
+     *
+     * @param {Runtime} runtime
+     */
     constructor (runtime) {
+        /**
+         * The Scratch 3.0 runtime.
+         * @type {Runtime}
+         */
         this.runtime = runtime;
-        console.log(runtime)
+
+        this.runtime.configureScratchLinkSocketFactory(
+            CustomScratchLinkSocketFactory);
+        // Create a new Pikachu peripheral instance
+        this._peripheral = new PikachuBotPeripheral(this.runtime,
+            PikachuBotExtenstion.EXTENSION_ID);
+
     }
 
     getInfo () {
         return {
-            id: 'pikachubot',
-            name: 'Pikachu bot',
+            id: PikachuBotExtenstion.EXTENSION_ID,
+            name: PikachuBotExtenstion.EXTENSION_NAME,
+            blockIconURI: blockIconURI,
+            showStatusButton: true,
             blocks: [
                 {
                     opcode: 'op_doBeep',
-                    blockType: BlockType.COMMAND,
+                    blockType: COMMAND,
                     text: 'beep for [INTERVAL] sec',
                     arguments: {
                         INTERVAL: {
-                            type: ArgumentType.NUMBER,
+                            type: NUMBER,
                             defaultValue: 5
                         }
                     }
@@ -46,9 +59,6 @@ class PikachuBotBlocks {
     }
 
     op_doBeep (args) {
-        const interval = Cast.toString(args.INTERVAL);
-        log.log("Do beep for interval "+ interval);
+        this._peripheral.beep(args.INTERVAL);
     }
 }
-
-module.exports = PikachuBotBlocks;
