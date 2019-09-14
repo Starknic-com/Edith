@@ -1,0 +1,5 @@
+**/node_modules
+tmp
+**/*.pyc
+**/__pycache__
+**/*.pyo
