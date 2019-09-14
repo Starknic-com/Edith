@@ -1,0 +1,6 @@
+
+
+esp searches for known networks and joins configured, if multiple configured joins based on streagth
+
+if not no known network avaialble, it creates an hotspot with paswordless
+

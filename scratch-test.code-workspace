@@ -5,6 +5,9 @@
 		},
 		{
 			"path": "scratch-gui"
+		},
+		{
+			"path": "uPy"
 		}
 	],
 	"settings": {}

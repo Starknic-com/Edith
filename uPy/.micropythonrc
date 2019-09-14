@@ -1,0 +1,26 @@
+{
+  "upload": {
+    "port": "/dev/ttyUSB0",
+    "baud": 115200
+  },
+  "serial": {
+    "port": "/dev/ttyUSB0",
+    "baud": 115200
+  },
+  "ignore": {
+    "extensions": [
+      ".micropythonrc",
+      ".pyt",
+      ".pyc",
+      ".pyo"
+    ],
+    "directories": [
+      ".vscode",
+      "__pycache__"
+    ]
+  },
+  "tools": {
+    "ampy": "/home/gandalf/miniconda3/bin/ampy",
+    "rshell": "/home/gandalf/miniconda3/bin/rshell"
+  }
+}
