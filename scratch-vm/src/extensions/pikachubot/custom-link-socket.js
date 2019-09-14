@@ -1,4 +1,8 @@
-export class LinkWS {
+
+const EDITHLINK_PORT = 11111
+const EDITHLINK_URL = `ws://localhost:${EDITHLINK_PORT}`
+
+export class EdithLinkWS {
     constructor(type) {
         this._type = type;
         this._onOpen = null;
@@ -9,8 +13,8 @@ export class LinkWS {
     }
     open() {
         switch (this._type) {
-            case 'MJ':
-                this._ws = new WebSocket('ws://localhost:7331/mj');
+            case 'ESPWLAN':
+                this._ws = new WebSocket(`${EDITHLINK_URL}/espwlan`);
                 break;
             default:
                 throw new Error(`Unknown LinkWS socket Type: ${this._type}`);

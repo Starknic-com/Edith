@@ -13,11 +13,11 @@ export class CustomLink extends JSONRPC {
      * @param {object} connectCallback - a callback for connection.
      * @param {object} resetCallback - a callback for resetting extension state.
      */
-    constructor (runtime, extensionId, peripheralOptions, connectCallback, resetCallback = null) {
+    constructor(runtime, extensionId, peripheralOptions, connectCallback, resetCallback = null) {
         super();
 
-        // this._socket = runtime.getScratchLinkSocket('MJ');
-        this._socket = CustomScratchLinkSocketFactory('MJ');
+        // this._socket = runtime.getScratchLinkSocket('ESPWLAN');
+        this._socket = CustomScratchLinkSocketFactory('ESPWLAN');
         this._socket.setOnOpen(this.requestPeripheral.bind(this));
         this._socket.setOnClose(this.handleDisconnectError.bind(this));
         this._socket.setOnError(this._handleRequestError.bind(this));
@@ -42,7 +42,7 @@ export class CustomLink extends JSONRPC {
      * Request connection to the peripheral.
      * If the web socket is not yet open, request when the socket promise resolves.
      */
-    requestPeripheral () {
+    requestPeripheral() {
         this._availaCustomLinkPeripherals = {};
         if (this._discoverTimeoutID) {
             window.clearTimeout(this._discoverTimeoutID);
@@ -59,8 +59,8 @@ export class CustomLink extends JSONRPC {
      * callback if connection is successful.
      * @param {number} id - the id of the peripheral to connect to
      */
-    connectPeripheral (id) {
-        this.sendRemoteRequest('connect', {peripheralId: id})
+    connectPeripheral(id) {
+        this.sendRemoteRequest('connect', { peripheralId: id })
             .then(() => {
                 this._connected = true;
                 this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
@@ -74,7 +74,7 @@ export class CustomLink extends JSONRPC {
     /**
      * Close the websocket.
      */
-    disconnect () {
+    disconnect() {
         if (this._connected) {
             this._connected = false;
         }
@@ -94,7 +94,7 @@ export class CustomLink extends JSONRPC {
     /**
      * @return {bool} whether the peripheral is connected.
      */
-    isConnected () {
+    isConnected() {
         return this._connected;
     }
 
@@ -105,7 +105,7 @@ export class CustomLink extends JSONRPC {
      * @param {object} onCharacteristicChanged - callback for characteristic change notifications.
      * @return {Promise} - a promise from the remote startNotifications request.
      */
-    startNotifications (serviceId, characteristicId, onCharacteristicChanged = null) {
+    startNotifications(serviceId, characteristicId, onCharacteristicChanged = null) {
         const params = {
             serviceId,
             characteristicId
@@ -125,7 +125,7 @@ export class CustomLink extends JSONRPC {
      * @param {object} onCharacteristicChanged - callback for characteristic change notifications.
      * @return {Promise} - a promise from the remote read request.
      */
-    read (serviceId, characteristicId, optStartNotifications = false, onCharacteristicChanged = null) {
+    read(serviceId, characteristicId, optStartNotifications = false, onCharacteristicChanged = null) {
         const params = {
             serviceId,
             characteristicId
@@ -151,8 +151,8 @@ export class CustomLink extends JSONRPC {
      * @param {boolean} withResponse - if true, resolve after peripheral's response.
      * @return {Promise} - a promise from the remote send request.
      */
-    write (serviceId, characteristicId, message, encoding = null, withResponse = null) {
-        const params = {serviceId, characteristicId, message};
+    write(serviceId, characteristicId, message, encoding = null, withResponse = null) {
+        const params = { serviceId, characteristicId, message };
         if (encoding) {
             params.encoding = encoding;
         }
@@ -171,25 +171,25 @@ export class CustomLink extends JSONRPC {
      * @param {object} params - a received list of parameters.
      * @return {object} - optional return value.
      */
-    didReceiveCall (method, params) {
+    didReceiveCall(method, params) {
         switch (method) {
-        case 'didDiscoverPeripheral':
-            this._availaCustomLinkPeripherals[params.peripheralId] = params;
-            this._runtime.emit(
-                this._runtime.constructor.PERIPHERAL_LIST_UPDATE,
-                this._availaCustomLinkPeripherals
-            );
-            if (this._discoverTimeoutID) {
-                window.clearTimeout(this._discoverTimeoutID);
-            }
-            break;
-        case 'characteristicDidChange':
-            if (this._characteristicDidChangeCallback) {
-                this._characteristicDidChangeCallback(params.message);
-            }
-            break;
-        case 'ping':
-            return 42;
+            case 'didDiscoverPeripheral':
+                this._availaCustomLinkPeripherals[params.peripheralId] = params;
+                this._runtime.emit(
+                    this._runtime.constructor.PERIPHERAL_LIST_UPDATE,
+                    this._availaCustomLinkPeripherals
+                );
+                if (this._discoverTimeoutID) {
+                    window.clearTimeout(this._discoverTimeoutID);
+                }
+                break;
+            case 'characteristicDidChange':
+                if (this._characteristicDidChangeCallback) {
+                    this._characteristicDidChangeCallback(params.message);
+                }
+                break;
+            case 'ping':
+                return 42;
         }
     }
 
@@ -204,7 +204,7 @@ export class CustomLink extends JSONRPC {
      * Disconnect the socket, and if the extension using this socket has a
      * reset callback, call it. Finally, emit an error to the runtime.
      */
-    handleDisconnectError (/* e */) {
+    handleDisconnectError(/* e */) {
         // log.error(`CustomLink error: ${JSON.stringify(e)}`);
 
         if (!this._connected) return;
@@ -221,7 +221,7 @@ export class CustomLink extends JSONRPC {
         });
     }
 
-    _handleRequestError (/* e */) {
+    _handleRequestError(/* e */) {
         // log.error(`CustomLink error: ${JSON.stringify(e)}`);
 
         this._runtime.emit(this._runtime.constructor.PERIPHERAL_REQUEST_ERROR, {
@@ -230,7 +230,7 @@ export class CustomLink extends JSONRPC {
         });
     }
 
-    _handleDiscoverTimeout () {
+    _handleDiscoverTimeout() {
         if (this._discoverTimeoutID) {
             window.clearTimeout(this._discoverTimeoutID);
         }
