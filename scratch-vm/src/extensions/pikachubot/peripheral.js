@@ -1,9 +1,9 @@
-import {NUMBER} from '../../extension-support/argument-type';
-import {COMMAND} from '../../extension-support/block-type';
-import {toString} from '../../util/cast';
-import {log as _log} from '../../util/log';
+import { NUMBER } from '../../extension-support/argument-type';
+import { COMMAND } from '../../extension-support/block-type';
+import { toString } from '../../util/cast';
+import { log as _log } from '../../util/log';
 
-import {CustomLink as Link} from './link';
+import { CustomLink as Link } from './link';
 /**
  * A time interval to wait (in milliseconds) before reporting to the Link socket
  * that data has stopped coming from the peripheral.
@@ -24,7 +24,7 @@ const LinkDataStoppedError = 'pikachu extension stopped receiving data';
 
 
 const LinkUUID = {
-    service: 0xf005,
+    service: "esp-pikachu",
     rxChar: '5261da01-fa7e-42ab-850b-7c80220097cc',
     txChar: '5261da02-fa7e-42ab-850b-7c80220097cc'
 };
@@ -36,7 +36,7 @@ export class PikachuBotPeripheral {
      * @param {Runtime} runtime
      * @param {string} extensionId
      */
-    constructor (runtime, extensionId) {
+    constructor(runtime, extensionId) {
 
         this._runtime = runtime;
         this._extensionId = extensionId;
@@ -53,13 +53,15 @@ export class PikachuBotPeripheral {
     /**
      * Called by the runtime when user wants to scan for a peripheral.
      */
-    scan () {
+    scan() {
         if (this._link) {
             this._link.disconnect();
         }
+
+        // TODO(mj) replace this with custom link
         this._link = new Link(this._runtime, this._extensionId, {
             filters: [
-                {services: [LinkUUID.service]}
+                { services: [LinkUUID.service] }
             ]
         }, this._onConnect, this.reset);
     }
@@ -68,7 +70,7 @@ export class PikachuBotPeripheral {
      * Called by the runtime when user wants to connect to a certain peripheral.
      * @param {number} id - the id of the peripheral to connect to.
      */
-    connect (id) {
+    connect(id) {
         if (this._link) {
             this._link.connectPeripheral(id);
         }
@@ -77,7 +79,7 @@ export class PikachuBotPeripheral {
     /**
      * Disconnect from the PikachuBot.
      */
-    disconnect () {
+    disconnect() {
         if (this._link) {
             this._link.disconnect();
         }
@@ -88,7 +90,7 @@ export class PikachuBotPeripheral {
     /**
      * Reset all the state and timeout/interval ids.
      */
-    reset () {
+    reset() {
         if (this._timeoutID) {
             window.clearTimeout(this._timeoutID);
             this._timeoutID = null;
@@ -99,7 +101,7 @@ export class PikachuBotPeripheral {
      * Return true if connected to the PikachuBot.
      * @return {boolean} - whether the PikachuBot is connected.
      */
-    isConnected () {
+    isConnected() {
         let connected = false;
         if (this._link) {
             connected = this._link.isConnected();
@@ -112,7 +114,7 @@ export class PikachuBotPeripheral {
      * @param {number} command - the Link command hex.
      * @param {Uint8Array} message - the message to write
      */
-    send (command, message) {
+    send(command, message) {
         if (!this.isConnected()) return;
         if (this._busy) return;
 
@@ -147,7 +149,7 @@ export class PikachuBotPeripheral {
      * Starts reading data from peripheral after Link has connected to it.
      * @private
      */
-    _onConnect () {
+    _onConnect() {
         this._link.read(LinkUUID.service, LinkUUID.rxChar, true, this._onMessage);
         this._timeoutID = window.setTimeout(
             () => this._link.handleDisconnectError(LinkDataStoppedError),
@@ -160,7 +162,7 @@ export class PikachuBotPeripheral {
      * @param {object} base64 - the incoming Link data.
      * @private
      */
-    _onMessage (base64) {
+    _onMessage(base64) {
         // parse data
         const data = Base64Util.base64ToUint8Array(base64);
 
@@ -177,7 +179,7 @@ export class PikachuBotPeripheral {
 
     // ///////////////////////////////////////  bot specific things //////////////////
 
-    beep (interval) {
+    beep(interval) {
         this.send(PikachuCommand.BEEP, Uint8Array.from([interval]));
     }
 

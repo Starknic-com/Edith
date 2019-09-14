@@ -1,11 +1,14 @@
 const JSONRPC = require('./commons/jsonrpc');
 const utils = require('./commons/utils');
-
+const PeripheralDiscovery = require('./discovery').PeripheralDiscovery
 
 class LinkRPCEndpoint extends JSONRPC {
+
+
     constructor(wsconn, config) {
         super();
         this.wsconn = wsconn;
+        this._discovery = null
         this.notificationIntervalId = null;
         // wsconn.send('{ "connection" : "ok"}');
         wsconn.on('message', (message) => {
@@ -25,7 +28,7 @@ class LinkRPCEndpoint extends JSONRPC {
 
     // overrided
     didReceiveCall(method, params) {
-        console.debug('RPCEnd: rpc-receive:', { method, params });
+        console.debug('RPCEnd: rpc-receive:', { method, params: JSON.stringify(params) });
         const rmethod = `r_${method}`;
         if (this[rmethod]) {
             const resultPromise = this[rmethod](params);
@@ -64,9 +67,37 @@ class LinkRPCEndpoint extends JSONRPC {
     }
 
     r_discover(params) {
-        if (params.name === 'picahu') {
-            return utils.errored('RPCEnd: Only pikachu can do mock');
+        // return this.r_discover_mock(params)
+        // check in singleton static discovery object
+        if (LinkRPCEndpoint.discovery.busy()) {
+            console.warn("already discovery is running. skipping request")
+            return
         }
+        // PeripheralConfig = {
+        //     "SERVICE": "esp-pikachu",
+        //     "NAME": "PikachuBot-Dev",
+        //     "ID": "PIKA007",
+        //     "DISCOVERY_PORT": 7007,
+        //     "LINK_PORT": 7008,
+        //     "IP": "255.255.255.255",  # dummy
+        // }
+        const services = params.filters && params.filters[0] && params.filters[0].services
+
+        console.info("start discovery. serviceFilter:", services)
+        return LinkRPCEndpoint.discovery.discover().then(results => {
+            results.filter(c => services && services.includes(c.SERVICE))
+                .forEach(c => this.sendRemoteNotification('didDiscoverPeripheral',
+                    {
+                        peripheralId: c.ID, // Unique identifier for peripheral
+                        name: c.NAME, // Name
+                        rssi: c.RSSI || 0
+                    })
+                )
+        }
+        )
+    }
+
+    r_discover_mock(params) {
         setTimeout(() => this.sendRemoteNotification('didDiscoverPeripheral', {
             peripheralId: '0x00017', // Unique identifier for peripheral
             name: 'PikachuBot', // Name
@@ -80,6 +111,13 @@ class LinkRPCEndpoint extends JSONRPC {
         return utils.sleep(1000).then(() => null);
     }
 
+    static get discovery() {
+        if (!this._discovery) {
+            console.log("creating new PeripheralDiscovery object")
+            this._discovery = new PeripheralDiscovery()
+        }
+        return this._discovery
+    }
 
     serve() {
 

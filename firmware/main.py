@@ -12,11 +12,14 @@ known_ap_configs = [
 ]
 
 PeripheralConfig = {
-    "NAME": "Pikachu",
+    "SERVICE": "esp-pikachu",
+    "NAME": "PikachuBot-Dev",
+    # TODO(mj) generate ID using mac
     "ID": "PIKA007",
     "DISCOVERY_PORT": 7007,
     "LINK_PORT": 7008,
     "IP": "255.255.255.255",  # dummy
+    "RSSI": 0,  # dummy
 }
 
 sta_if = WLAN(STA_IF)
@@ -44,6 +47,7 @@ def try_connect_to_known_aps(timeout=30, scan_retry_interval=5, ap_connect_timeo
         ap_list = find_aps(sort_by_strength=True)
         ssid_list = [a[0] for a in ap_list]
         available = []
+        print("active ssids", ssid_list)
         for apc in known_ap_configs:
             if apc[0] in ssid_list:
                 available.append(apc)
@@ -78,6 +82,7 @@ def connect_to_ap(essid, passwd, timeout=10):
 
 
 def discovery_reply():
+    PeripheralConfig["RSSI"] = sta_if.status("rssi")
     return dumps(PeripheralConfig).encode()
 
 

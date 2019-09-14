@@ -5,7 +5,7 @@
 /* eslint-disable camelcase */
 import * as JSONRPC from '../../util/jsonrpc';
 
-function sleep (m) {
+function sleep(m) {
     const p = new Promise(resolve => {
         setTimeout(() => {
             resolve(m);
@@ -15,7 +15,7 @@ function sleep (m) {
 }
 
 
-function errored (err) {
+function errored(err) {
     const p = new Promise((resolve, reject) => {
         reject(err);
     });
@@ -23,21 +23,21 @@ function errored (err) {
 }
 
 class RPCMock extends JSONRPC {
-    constructor (mockSendFn) {
+    constructor(mockSendFn) {
         super();
         this.mockSendFn = mockSendFn;
         this.notificationIntervalId = null;
     }
 
     // overrided
-    _sendMessage (jsonMessageObject) {
+    _sendMessage(jsonMessageObject) {
         console.debug('mock-send:', jsonMessageObject);
         this.mockSendFn(jsonMessageObject);
     }
 
     // overrided
-    didReceiveCall (method, params) {
-        console.debug('mock-receive:', {method, params});
+    didReceiveCall(method, params) {
+        console.debug('mock-receive:', { method, params });
         const rmethod = `r_${method}`;
         if (this[rmethod]) {
             const resultPromise = this[rmethod](params);
@@ -55,17 +55,17 @@ class RPCMock extends JSONRPC {
         console.warn(`No handler for ${rmethod}`, params);
     }
 
-    r_read (params) {
-        const {startNotifications} = params;
+    r_read(params) {
+        const { startNotifications } = params;
         if (startNotifications && !this.notificationIntervalId) {
             this.notificationIntervalId = setInterval(() => {
-                this.sendRemoteNotification('characteristicDidChange', {message: 'dGVzdG1lb250aGlzd2hlbmFiY2QK'});
+                this.sendRemoteNotification('characteristicDidChange', { message: 'dGVzdG1lb250aGlzd2hlbmFiY2QK' });
             }, 4000);
             console.log('registering startNotification. ID:', this.notificationIntervalId);
         }
     }
 
-    r_connect (params) {
+    r_connect(params) {
         const id = params.peripheralId;
         console.log('connecting to', id);
         return sleep(10).then(() => {
@@ -75,8 +75,8 @@ class RPCMock extends JSONRPC {
 
     }
 
-    r_discover (params) {
-        if (params.name === 'picahu') {
+    r_discover(params) {
+        if (params.name !== 'pikachu') {
             return errored('Only pikachu can do mock');
         }
         setTimeout(() => this.sendRemoteNotification('didDiscoverPeripheral', {
@@ -94,7 +94,7 @@ class RPCMock extends JSONRPC {
 }
 
 export class LinkWSMock {
-    constructor (type) {
+    constructor(type) {
         this._type = type;
         this._onOpen = null;
         this._onClose = null;
@@ -102,7 +102,7 @@ export class LinkWSMock {
         this._handleMessage = null;
         this.rpcMock = new RPCMock(this._onMessage.bind(this));
     }
-    open () {
+    open() {
         if (this._onOpen && this._onClose && this._onError && this._handleMessage) {
             // TODO
         } else {
@@ -111,28 +111,28 @@ export class LinkWSMock {
         this._isOpen = true;
         window.setTimeout(this._onOpen, 1000);
     }
-    close () {
+    close() {
         window.setTimeout(this._onClose, 500);
     }
-    sendMessage (message) {
+    sendMessage(message) {
         this.rpcMock._handleMessage(message);
     }
-    setOnOpen (fn) {
+    setOnOpen(fn) {
         this._onOpen = fn;
     }
-    setOnClose (fn) {
+    setOnClose(fn) {
         this._onClose = fn;
     }
-    setOnError (fn) {
+    setOnError(fn) {
         this._onError = fn;
     }
-    setHandleMessage (fn) {
+    setHandleMessage(fn) {
         this._handleMessage = fn;
     }
-    isOpen () {
+    isOpen() {
         return this._isOpen;
     }
-    _onMessage (msg) {
+    _onMessage(msg) {
         // const json = JSON.parse(msg.data);
         this._handleMessage(msg);
     }
