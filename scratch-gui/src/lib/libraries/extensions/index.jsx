@@ -53,14 +53,14 @@ import pikachuBotConnectionSmallIconURL from './pikachubot/pikachu-icon-24.png';
 
 export default [
     {
-        name: 'Pikachu Bot',
+        name: 'Starknic Bot',
         extensionId: 'pikachubot',
-        collaborator: 'starknic',
+        collaborator: 'Starknic',
         iconURL: pikachuBotIconURL,
         insetIconURL: pikachuBotInsetIconURL,
         description: (
             <FormattedMessage
-                defaultMessage="Checkout!! ma friggin' pikachu bot."
+                defaultMessage="Connect to Starknic Bot and have Fun."
                 description="Description for the 'pikachubot' extension"
                 id="gui.extension.pikachubot.description"
             />
