@@ -4,3 +4,20 @@ esp searches for known networks and joins configured, if multiple configured joi
 
 if not no known network avaialble, it creates an hotspot with paswordless
 
+
+ESP
+===========
+
+https://github.com/esp8266/esp8266-wiki/wiki/Boot-Process#esp-boot-modes
+
+ reset causes:
+        0:
+        1: normal boot
+        2: reset pin
+        3: software reset
+        4: watchdog reset
+
+    boot device:
+        0:
+        1: ram
+        3: flash
