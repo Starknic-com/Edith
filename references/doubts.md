@@ -1,0 +1,1 @@
+* where is exp8266's RXD1 pin?

@@ -1,0 +1,16 @@
+esptool.py v2.7
+Found 1 serial ports
+Serial port /dev/ttyUSB0
+Connecting....
+Detecting chip type... ESP8266
+Chip is ESP8266EX
+Features: WiFi
+Crystal is 26MHz
+MAC: cc:50:e3:dd:cc:d5
+Uploading stub...
+Running stub...
+Stub running...
+Manufacturer: 1c
+Device: 3016
+Detected flash size: 4MB
+Hard resetting via RTS pin...
