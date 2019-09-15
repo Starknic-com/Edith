@@ -1,7 +1,7 @@
 const WebSocket = require('ws')
 
 // TODO(mj): better efficient transport protocol
-class PerpheralConnection {
+class PeripheralConnection {
 
     constructor(config) {
         this.peripheralId = config.ID
@@ -70,4 +70,4 @@ class PerpheralConnection {
 
 
 
-module.exports = { PerpheralConnection }
+module.exports = { PeripheralConnection }

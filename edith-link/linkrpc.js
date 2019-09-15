@@ -1,7 +1,7 @@
 const JSONRPC = require('./commons/jsonrpc');
 const utils = require('./commons/utils');
 const PeripheralDiscovery = require('./discovery').PeripheralDiscovery
-const PerpheralConnection = require('./peripheralconn').PerpheralConnection
+const PeripheralConnection = require('./peripheralconn').PeripheralConnection
 
 class LinkRPCEndpoint extends JSONRPC {
 
@@ -99,8 +99,8 @@ class LinkRPCEndpoint extends JSONRPC {
 
         if (!LinkRPCEndpoint.activeConnections.get(id)) {
             const config = PeripheralDiscovery.discoveredDeviceHistory.get(id)
-            console.log('RPCEnd: creating  PerpheralConnection for', id);
-            const pconn = new PerpheralConnection(config)
+            console.log('RPCEnd: creating  PeripheralConnection for', id);
+            const pconn = new PeripheralConnection(config)
             const success = await pconn.waitForConnectionSuccess()
             if (success) {
                 LinkRPCEndpoint.activeConnections.set(id, pconn)
