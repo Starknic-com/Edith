@@ -1,29 +1,34 @@
 const JSONRPC = require('./commons/jsonrpc');
 const utils = require('./commons/utils');
 const PeripheralDiscovery = require('./discovery').PeripheralDiscovery
+const PerpheralConnection = require('./peripheralconn').PerpheralConnection
 
 class LinkRPCEndpoint extends JSONRPC {
 
-
-    constructor(wsconn, config) {
+    constructor(wsocket, config) {
         super();
-        this.wsconn = wsconn;
+        this.wsocket = wsocket;
         this._discovery = null
         this.notificationIntervalId = null;
         // wsconn.send('{ "connection" : "ok"}');
-        wsconn.on('message', (message) => {
+        wsocket.on('message', (message) => {
             const jsonObj = JSON.parse(message)
             this._handleMessage(jsonObj)
         });
-        wsconn.on('close', (code, reason) => { });
-        wsconn.on("error", err => { console.error('RPCEnd: ws transport erred ', err) })
+        wsocket.on('close', (code, reason) => {
+            this.disconnectPeripherals()
+        }); // We close wscoket when upstream device is disconnected.
+        wsocket.on("error", err => {
+            console.error('RPCEnd: ws transport erred ', err)
+            this.disconnectPeripherals()
+        })
     }
 
     // overrided
     _sendMessage(jsonMessageObject) {
         const jsonStr = JSON.stringify(jsonMessageObject)
         console.debug('RPCEnd: raw rpc message sending through ws: ', jsonStr);
-        this.wsconn.send(jsonStr);
+        this.wsocket.send(jsonStr);
     }
 
     // overrided
@@ -34,11 +39,11 @@ class LinkRPCEndpoint extends JSONRPC {
             const resultPromise = this[rmethod](params);
             return Promise.resolve(resultPromise).then(
                 result => {
-                    console.log(`MOCK ${method}() => RESULT: ${result}`);
+                    console.log(`TAP ${method}() => RESULT: ${result}`);
                     return result;
                 },
                 error => {
-                    console.error(`MOCK ${method}() => ERROR: ${error}`);
+                    console.error(`TAP ${method}() => ERROR: ${error}`);
                     return error;
                 }
             );
@@ -46,24 +51,71 @@ class LinkRPCEndpoint extends JSONRPC {
         console.warn(`No handler for ${rmethod}`, params);
     }
 
+    async r_write(args) {
+        let { serviceId, characteristicId, message, encoding, withResponse } = args
+        let buff = Buffer.from(message, 'base64');
+        let data = buff.toString('ascii');
+        console.log("r_write data", data)
+        if (LinkRPCEndpoint.activeConnections.size === 0) {
+            throw new Error("No upstream peripheral")
+        }
+        for (let conn of LinkRPCEndpoint.activeConnections.values()) {
+            if (conn) {
+                console.log("r_write conn", conn.peripheralId)
+                return await conn.send(data)
+            }
+        }
+    }
+
     r_read(params) {
         const { startNotifications } = params;
         if (startNotifications && !this.notificationIntervalId) {
-            this.notificationIntervalId = setInterval(() => {
-                this.sendRemoteNotification('characteristicDidChange', { message: 'dGVzdG1lb250aGlzd2hlbmFiY2QK' });
-            }, 4000);
+            // TODO(mj) after improved peripheral transport, do a state push  mechanism instead of polling
+            // this.notificationIntervalId = setInterval(() => {
+            //     this.sendRemoteNotification('characteristicDidChange', { message: 'dGVzdG1lb250aGlzd2hlbmFiY2QK' });
+            // }, 4000);
             console.log('registering startNotification. ID:', this.notificationIntervalId);
         }
     }
 
-    r_connect(params) {
-        const id = params.peripheralId;
-        console.log('RPCEnd: connecting to', id);
-        return utils.sleep(10).then(() => {
-            console.log('conncted reply', id);
-            return null;
-        });
+    disconnectPeripherals() {
+        // TODO: one device per rpcEp instance. not on global level
+        LinkRPCEndpoint.activeConnections.forEach((pconn, pid) => {
+            console.log(`disconnecting device${pid}`)
+            pconn.disconnect()
+        })
+        LinkRPCEndpoint.activeConnections.clear()
+    }
 
+    async r_connect(params) {
+        // TODO: (once connect was called, ws should be upgraded to serve to specific peripheral only'
+        // ie, should not accept disover rpc and other common rpcs
+
+        const id = params.peripheralId;
+        // TODO(mj): respect lastFoundWhen
+        if (!PeripheralDiscovery.discoveredDeviceHistory.has(id)) {
+            return utils.errored(new Error("unknown device id:" + id))
+        }
+
+        if (!LinkRPCEndpoint.activeConnections.get(id)) {
+            const config = PeripheralDiscovery.discoveredDeviceHistory.get(id)
+            console.log('RPCEnd: creating  PerpheralConnection for', id);
+            const pconn = new PerpheralConnection(config)
+            const success = await pconn.waitForConnectionSuccess()
+            if (success) {
+                LinkRPCEndpoint.activeConnections.set(id, pconn)
+                pconn.ondisconnect = () => {
+                    console.log(`RPCEnd: peripheral connection to ${id} disconnected. closing ws`)
+                    LinkRPCEndpoint.activeConnections.delete(id)
+                    this.wsocket.close()
+                }
+                return 'success'
+            }
+            throw new Error("connection is closed prematurely")
+        } else {
+            throw new Error('TODO')
+            // TODO(mj) check earlier connection aliveness. possibly reuse
+        }
     }
 
     r_discover(params) {
@@ -102,12 +154,12 @@ class LinkRPCEndpoint extends JSONRPC {
             peripheralId: '0x00017', // Unique identifier for peripheral
             name: 'PikachuBot', // Name
             rssi: -30
-        }), 2700);
+        }), 1000);
         setTimeout(() => this.sendRemoteNotification('didDiscoverPeripheral', {
             peripheralId: '0x00019', // Unique identifier for peripheral
             name: 'Unknown device', // Name
             rssi: -80
-        }), 10000);
+        }), 5000);
         return utils.sleep(1000).then(() => null);
     }
 
@@ -117,6 +169,12 @@ class LinkRPCEndpoint extends JSONRPC {
             this._discovery = new PeripheralDiscovery()
         }
         return this._discovery
+    }
+    static get activeConnections() {
+        if (!this._connections) {
+            this._connections = new Map()
+        }
+        return this._connections
     }
 
     serve() {
