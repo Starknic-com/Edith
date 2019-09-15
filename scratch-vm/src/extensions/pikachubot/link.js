@@ -62,6 +62,7 @@ export class CustomLink extends JSONRPC {
     connectPeripheral(id) {
         this.sendRemoteRequest('connect', { peripheralId: id })
             .then(() => {
+                window.alert("connected " + id)
                 this._connected = true;
                 this._runtime.emit(this._runtime.constructor.PERIPHERAL_CONNECTED);
                 this._connectCallback();

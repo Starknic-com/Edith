@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import ArgumentType from '../../extension-support/argument-type';
 import BlockType from '../../extension-support/block-type';
-import {log as _log} from '../../util/log';
+import { log as _log } from '../../util/log';
 
 import CustomScratchLinkSocketFactory from './link-socket-factory';
-import {PikachuBotPeripheral} from './peripheral';
+import { PikachuBotPeripheral } from './peripheral';
 
 
 const Motor = {
@@ -24,10 +24,10 @@ const SensorState = {
 
 const blockIconURI = 'https://img.icons8.com/color/48/000000/pikachu-pokemon.png';
 export default class PikachuBotExtenstion {
-    static get EXTENSION_ID () {
+    static get EXTENSION_ID() {
         return 'pikachubot';
     }
-    static get EXTENSION_NAME (){
+    static get EXTENSION_NAME() {
         return 'Pikachu';
     }
 
@@ -35,7 +35,7 @@ export default class PikachuBotExtenstion {
      *
      * @param {Runtime} runtime
      */
-    constructor (runtime) {
+    constructor(runtime) {
         /**
          * The Scratch 3.0 runtime.
          * @type {Runtime}
@@ -50,13 +50,30 @@ export default class PikachuBotExtenstion {
 
     }
 
-    getInfo () {
+    getInfo() {
         return {
             id: PikachuBotExtenstion.EXTENSION_ID,
             name: PikachuBotExtenstion.EXTENSION_NAME,
             blockIconURI: blockIconURI,
             showStatusButton: true,
             blocks: [
+                {
+                    opcode: this.op_setpin.name,
+                    blockType: BlockType.COMMAND,
+                    text: 'set pin [PIN] state [LEVEL]',
+                    arguments: {
+                        PIN: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pins',
+                            defaultValue: 16
+                        },
+                        LEVEL: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'pinLevels',
+                            defaultValue: 0
+                        }
+                    }
+                },
                 {
                     opcode: this.op_beep.name,
                     blockType: BlockType.COMMAND,
@@ -118,6 +135,28 @@ export default class PikachuBotExtenstion {
                 }
             ],
             menus: {
+                pins: {
+                    acceptReporters: true,
+                    items: [{
+                        text: 'ESP_LED(P2)',
+                        value: 2
+                    },
+                    {
+                        text: 'ESP_LED(P16)',
+                        value: 16
+                    }]
+                },
+                pinLevels: {
+                    acceptReporters: true,
+                    items: [{
+                        text: 'HIGH',
+                        value: 1
+                    },
+                    {
+                        text: 'LOW',
+                        value: 0
+                    }]
+                },
                 motors: {
                     acceptReporters: true,
                     items: [{
@@ -155,23 +194,27 @@ export default class PikachuBotExtenstion {
         };
     }
 
-    op_move (args) {
+    op_move(args) {
         return console.log(args);
         this._peripheral.move(args.LEFT, args.RIGHT);
     }
 
-    op_isSensorStateMatched (args){
+    op_isSensorStateMatched(args) {
         return console.log(args);
         return this._peripheral.sensorState(args.SENSOR) === args.STATE;
     }
 
-    op_setSpeed (args) {
+    op_setSpeed(args) {
         return console.log(args);
         this._peripheral.setSpeed(args.MOTOR, args.SPEED);
     }
 
-    op_beep (args) {
+    op_beep(args) {
         return console.log(args);
         this._peripheral.beep(args.INTERVAL);
+    }
+
+    op_setpin(args) {
+        this._peripheral.setPin(+args.PIN, +args.LEVEL);
     }
 }

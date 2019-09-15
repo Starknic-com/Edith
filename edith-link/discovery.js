@@ -6,6 +6,13 @@ const DEFUALT_DISCOVERY_PORT = 7007
 
 const DEFAULT_TIMEOUT_SEC = 10
 class PeripheralDiscovery {
+
+    static get discoveredDeviceHistory() {
+        if (!this._discoveredDeviceHistory)
+            this._discoveredDeviceHistory = new Map()
+        return this._discoveredDeviceHistory
+    }
+
     constructor(defaultTimeout = DEFAULT_TIMEOUT_SEC, discoveryPort = DEFUALT_DISCOVERY_PORT) {
         this.discoveryPort = discoveryPort
         this.defaultTimeout = defaultTimeout
@@ -45,7 +52,6 @@ class PeripheralDiscovery {
     async discover(timeout) {
         this._discoveryRunning = true
 
-
         let timeoutms = (timeout || this.defaultTimeout) * 1000
         let resendHandlers = []
         let devicemap = new Map()
@@ -54,6 +60,11 @@ class PeripheralDiscovery {
             // should be called on success and errror
             const final = () => {
                 console.debug("endof discovery after", timeoutms, 'ms')
+                devicemap.forEach((config, id) => {
+                    PeripheralDiscovery.discoveredDeviceHistory.set(id, {
+                        ...config, lastFoundWhen: Date.now()
+                    })
+                })
                 this.sock.removeAllListeners('message')
                 resendHandlers.forEach(h => clearInterval(h))
                 this._discoveryRunning = false

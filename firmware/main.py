@@ -133,18 +133,21 @@ def get_state_reply():
 
 def set_pins(values):
     try:
-        for i in range(1, len(values), 2):  # 1, 3, 5... upto n
-            pin, val = i - 1, i
-            Pin(pin).value(val)
+        for i in range(1, len(values), 2):  # i = 1, 3, 5... upto n
+            pin, val = values[i - 1], values[i]
+            print("set_pin", pin, val)
+            gpioPin = Pin(pin)
+            gpioPin.init(Pin.OUT)
+            gpioPin.value(val)
         return b"@K"
     except Exception as oops:
-        print("Error in setstate", oops)
+        print("Error in set_pins", oops)
         return b"@E"
 
 
 OP_LEN = 2
-GET_STATE_OP = b"!S"
-SET_PINS_OP = b"!P"
+GET_STATE_OP = b"<S"
+SET_PINS_OP = b">P"
 
 
 async def link_endpoint_handler(reader, writer):
@@ -165,7 +168,7 @@ async def link_endpoint_handler(reader, writer):
                 if data == GET_STATE_OP:
                     reply = get_state_reply()
                 elif data[:OP_LEN] == SET_PINS_OP:
-                    values = loads(OP_LEN)
+                    values = loads(data[OP_LEN:])
                     reply = set_pins(values)
                 else:
                     reply = data

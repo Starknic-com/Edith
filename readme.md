@@ -2,24 +2,46 @@
 
 ### How to start development
 
-```
-git clone https://github.com/nom3ad/scratch-experiments.git
-cd scratch-experiments
-./start.sh
+```bash
+git clone https://github.com/Starknic-com/Edith.git
+cd Edith
+./setup.sh
 ```
 
-### How to build
-```
-cd scratch-vm
+### How to build gui
+```bash
+cd scratch-gui
 npm run build   # final artifacts will be at 'build' directory
 ```
 
 ### flow of control
-block definitions <=> peripheral <=> transport <=> device 
+block definitions <=> peripheral stub <==[ws]==> edith-link <==[tcp]==> peripheral 
 
 
-### transport possibilities
-=======================
+### How to use
+* upload firmware to device
+
+* reset device and run
+
+* start edith-link
+    ```bash
+    cd edith-link
+    npm start
+    ```
+* start edith-link
+    ```bash
+    cd edith-link
+    npm start
+    ```
+* start scratch-gui and open in browser
+    ```bash
+    cd scratch-gui
+    npm start
+    ```
+
+
+### other transport possibilities
+=================================
 
 1. BLE-WS through scratchlink   
     follow predefined protocol for scan/lifecycle-mgmnt/state-update
