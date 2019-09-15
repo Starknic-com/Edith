@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import ArgumentType from '../../extension-support/argument-type';
 import BlockType from '../../extension-support/block-type';
-import { log as _log } from '../../util/log';
+import {log as _log} from '../../util/log';
 
 import CustomScratchLinkSocketFactory from './link-socket-factory';
-import { PikachuBotPeripheral } from './peripheral';
+import {PikachuBotPeripheral} from './peripheral';
 
 
 const Motor = {
@@ -17,6 +17,18 @@ const Sensor = {
     RIGHT: 'RIGHT'
 };
 
+const Rotation = {
+    NONE: 0,
+    LEFT: -1,
+    RIGHT: 1
+};
+
+const Direction = {
+    NONE: 0,
+    FORWARD: 1,
+    BACKWARD: -1
+};
+
 const SensorState = {
     DARK: 'DARK',
     LIGHT: 'LIGHT'
@@ -24,10 +36,10 @@ const SensorState = {
 
 const blockIconURI = 'https://img.icons8.com/color/48/000000/pikachu-pokemon.png';
 export default class PikachuBotExtenstion {
-    static get EXTENSION_ID() {
+    static get EXTENSION_ID () {
         return 'pikachubot';
     }
-    static get EXTENSION_NAME() {
+    static get EXTENSION_NAME () {
         return 'Pikachu';
     }
 
@@ -35,7 +47,7 @@ export default class PikachuBotExtenstion {
      *
      * @param {Runtime} runtime
      */
-    constructor(runtime) {
+    constructor (runtime) {
         /**
          * The Scratch 3.0 runtime.
          * @type {Runtime}
@@ -50,7 +62,7 @@ export default class PikachuBotExtenstion {
 
     }
 
-    getInfo() {
+    getInfo () {
         return {
             id: PikachuBotExtenstion.EXTENSION_ID,
             name: PikachuBotExtenstion.EXTENSION_NAME,
@@ -74,6 +86,41 @@ export default class PikachuBotExtenstion {
                         }
                     }
                 },
+                {
+                    opcode: this.op_go.name,
+                    blockType: BlockType.COMMAND,
+                    text: 'go [DIRECTION] for [DURATION] seconds',
+                    arguments: {
+                        DIRECTION: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'directions',
+                            defaultValue: 1
+                        },
+                        DURATION: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 2
+                        }
+                    }
+                },
+                {
+                    opcode: this.op_rotate.name,
+                    blockType: BlockType.COMMAND,
+                    text: 'rotate [ROTATION] for [DURATION] seconds',
+                    arguments: {
+                        ROTATION: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'rotations',
+                            defaultValue: 1
+                        },
+                        DURATION: {
+                            type: ArgumentType.NUMBER,
+                            defaultValue: 2
+                        }
+                    }
+                },
+
+
+                // Below are Not implemented
                 {
                     opcode: this.op_beep.name,
                     blockType: BlockType.COMMAND,
@@ -138,11 +185,11 @@ export default class PikachuBotExtenstion {
                 pins: {
                     acceptReporters: true,
                     items: [{
-                        text: 'ESP_LED(P2)',
+                        text: 'ESP_LED(GPIO2)',
                         value: 2
                     },
                     {
-                        text: 'ESP_LED(P16)',
+                        text: 'BORAD_LED(GPIO16)',
                         value: 16
                     }]
                 },
@@ -166,6 +213,28 @@ export default class PikachuBotExtenstion {
                     {
                         text: 'RIGHT',
                         value: Motor.RIGHT
+                    }]
+                },
+                directions: {
+                    acceptReporters: true,
+                    items: [{
+                        text: 'FORWARD',
+                        value: Direction.FORWARD
+                    },
+                    {
+                        text: 'BACKWARD',
+                        value: Direction.BACKWARD
+                    }]
+                },
+                rotations: {
+                    acceptReporters: true,
+                    items: [{
+                        text: 'LEFT',
+                        value: Rotation.LEFT
+                    },
+                    {
+                        text: 'RIGHT',
+                        value: Rotation.RIGHT
                     }]
                 },
                 sensors: {
@@ -194,27 +263,34 @@ export default class PikachuBotExtenstion {
         };
     }
 
-    op_move(args) {
+    op_move (args) {
         return console.log(args);
         this._peripheral.move(args.LEFT, args.RIGHT);
     }
 
-    op_isSensorStateMatched(args) {
+    op_isSensorStateMatched (args) {
         return console.log(args);
         return this._peripheral.sensorState(args.SENSOR) === args.STATE;
     }
 
-    op_setSpeed(args) {
+    op_setSpeed (args) {
         return console.log(args);
         this._peripheral.setSpeed(args.MOTOR, args.SPEED);
     }
 
-    op_beep(args) {
+    op_beep (args) {
         return console.log(args);
         this._peripheral.beep(args.INTERVAL);
     }
 
-    op_setpin(args) {
-        this._peripheral.setPin(+args.PIN, +args.LEVEL);
+    // following are implemented at minimum functional level
+    op_setpin (args) {
+        return this._peripheral.setPin(+args.PIN, +args.LEVEL);
+    }
+    op_go (args) {
+        return this._peripheral.go(+args.DIRECTION, +args.DURATION);
+    }
+    op_rotate (args) {
+        return this._peripheral.rotate(+args.ROTATION, +args.DURATION);
     }
 }
