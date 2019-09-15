@@ -249,7 +249,7 @@ export class PikachuBotPeripheral {
         this.send(PikachuCommand.SET_PIN_STATE, Buffer.from(state));
     }
 
-    async go(direction, duration) {
+    go(direction, duration) {
         const durationMs = duration * 1000;
         let state;
         if (direction === Direction.FORWARD) {
@@ -273,10 +273,10 @@ export class PikachuBotPeripheral {
         console.debug('go setpin', state);
         // eslint-disable-next-line no-undef
         this.send(PikachuCommand.SET_PIN_STATE, Buffer.from(state));
-        return await promiseSleep(durationMs);
+        return promiseSleep(durationMs);
     }
 
-    async rotate(rotation, duration) {
+   rotate(rotation, duration) {
         const durationMs = duration * 1000;
         let state;
         if (rotation === Rotation.RIGHT) {
@@ -300,12 +300,10 @@ export class PikachuBotPeripheral {
         console.debug('rotation setpin', state);
         // eslint-disable-next-line no-undef
         this.send(PikachuCommand.SET_PIN_STATE, Buffer.from(state));
-        return await promiseSleep(durationMs);
+        return promiseSleep(durationMs);
     }
-
 
     beep(interval) {
         this.send(PikachuCommand.BEEP, Uint8Array.from([interval]));
     }
-
 }
