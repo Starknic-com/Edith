@@ -9,15 +9,15 @@ import {CustomLink as Link} from './link';
 
 // use from commons
 // eslint-disable-next-line require-jsdoc
-function promiseSleep(m) {
+function promiseSleep(m, obj) {
     const p = new Promise(resolve => {
         setTimeout(() => {
+	    obj.stop();
             resolve(m);
         }, m);
     });
     return p;
 }
-
 
 /**
  * A time interval to wait (in milliseconds) before reporting to the Link socket
@@ -273,8 +273,21 @@ export class PikachuBotPeripheral {
         console.debug('go setpin', state);
         // eslint-disable-next-line no-undef
         this.send(PikachuCommand.SET_PIN_STATE, Buffer.from(state));
-        return promiseSleep(durationMs);
+	return promiseSleep(durationMs, this);
     }
+
+   stop() {
+       let state;
+	state = JSON.stringify([
+            MotorPin.RIGHT.A, Level.LOW,
+            MotorPin.RIGHT.B, Level.LOW,
+
+            MotorPin.LEFT.A, Level.LOW,
+            MotorPin.LEFT.B, Level.LOW
+        ]);
+	console.debug('go setpin', state);
+	this.send(PikachuCommand.SET_PIN_STATE, Buffer.from(state));
+   }
 
    rotate(rotation, duration) {
         const durationMs = duration * 1000;
@@ -300,7 +313,7 @@ export class PikachuBotPeripheral {
         console.debug('rotation setpin', state);
         // eslint-disable-next-line no-undef
         this.send(PikachuCommand.SET_PIN_STATE, Buffer.from(state));
-        return promiseSleep(durationMs);
+        return promiseSleep(durationMs, this);
     }
 
     beep(interval) {
